@@ -23,14 +23,7 @@ exports.options =async (req, res, err) => {
         ]
     })
 }
-exports.create =async (req, res, err) => {
-    let newUser = req.body
-    try {
-        let user =await userModel.create(newUser)
-        res.send({message:"created",data:user})
 
-    }catch(err) {res.send(err)}
-}
 
 exports.getOne = async (req, res) => {
     let project = removeFieldsProject(["password", "email"],req.body.project)
