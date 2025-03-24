@@ -37,6 +37,17 @@ exports.getOne = async (req, res) => {
     }
 };
 
+exports.getPassword = async (req, res) => {
+    let project = 'email password';
+    
+
+    try {
+        let user = await userModel.findOne({_id:req.user._id}, project);
+        res.send({ message: "getpass", data: user });
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+};
 
 exports.getall = async (req, res) => {
     let sortObj = req.body.sort 
