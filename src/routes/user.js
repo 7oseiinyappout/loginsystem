@@ -7,7 +7,7 @@ const middlewares= require('../middlewares/authMiddleware');
 router.options('/', userController.options);
 router.get('/', userController.getall);
 router.get('/getOne', userController.getOne);
-router.get('/getpass',middlewares.authMiddleware, userController.getPassword);
+router.get('/getpass',middlewares.authMiddleware,middlewares.authorize("getpasss"), userController.getPassword);
 
 router.get('*', (req,res,err)=>{
     res.send('user api not found')

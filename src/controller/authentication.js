@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const userModel = require('../model/user');
+const Role = require('../model/role');
 
 exports.register = async (req, res, err) => {
 
@@ -8,7 +9,9 @@ exports.register = async (req, res, err) => {
         const user = req.body;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(user.password, salt);
-        const User = await userModel.create({ ...user, password: hashedPassword });
+        const role = await Role.findOne({ name: req.body.roleName });
+        if (!role) return res.status(400).json({ message: "Invalid role" });
+        const User = await userModel.create({ ...user, password: hashedPassword, role: role._id});
 
         res.send({
             message: "User registered successfully",
