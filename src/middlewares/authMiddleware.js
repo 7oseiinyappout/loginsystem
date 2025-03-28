@@ -21,12 +21,14 @@ exports.authMiddleware=(req,res,next)=>{
 exports.authorize=(requiredPermission)=>async(req,res,next)=>{
     try {
         const user = await User.findById(req.user._id).populate("role"); 
+        req.user.role = user.role
 
         if (!user || !user.role) {
             return res.status(403).json({ message: "Access denied. No role assigned." });
         }
 
-        if (!user.role.permissions.includes(requiredPermission)) {
+        if (!((user.role.permissions.includes(requiredPermission)) || (requiredPermission==user.role.name))) {
+
             return res.status(403).json({ message: `${user.role.name} not have permission to ` });
         }
 

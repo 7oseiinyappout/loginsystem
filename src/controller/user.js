@@ -38,7 +38,9 @@ exports.getOne = async (req, res) => {
 };
 
 exports.getPassword = async (req, res) => {
-    let project = 'email password';
+    let permissions= req.user.role.permissions
+    let project = `email ${permissions.includes('getpassd')?'password':''}`;
+    
     
 
     try {
