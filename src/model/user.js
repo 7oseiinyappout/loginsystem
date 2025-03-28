@@ -29,6 +29,10 @@ const UserSchema = new mongoose.Schema({
         ref: "Role",
         required: true 
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
     number: {
         type: Number
     }
