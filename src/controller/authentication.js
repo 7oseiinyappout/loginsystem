@@ -92,3 +92,12 @@ exports.verifyEmail  = async (req, res) => {
         res.status(400).json({ message: "رابط التحقق غير صالح أو منتهي الصلاحية" });
     }
 }
+exports.userInfo  = async (req, res) => {
+    try {
+        const user = await userModel.findOne({ _id :req.user._id }).populate('role');
+        if (!user) return res.status(400).json({ message: "invaled user" });
+        res.send(user);
+    } catch (error) {
+        res.status(400).json({ message: "invaled token" });
+    }
+}

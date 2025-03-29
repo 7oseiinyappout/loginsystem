@@ -24,3 +24,11 @@ exports.getRoleByName = async (req, res) => {
         res.status(500).send({ error: err.message });
     }
 };
+exports.editPermissions = async (req, res) => {
+    try {
+        let role = await Role.updateOne({name: req.body.name}, {permissions:req.body.permissions});
+        res.send({ message: "permissons edited successfuly", data: role });
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+};

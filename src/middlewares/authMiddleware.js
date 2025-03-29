@@ -27,7 +27,7 @@ exports.authorize=(requiredPermission)=>async(req,res,next)=>{
             return res.status(403).json({ message: "Access denied. No role assigned." });
         }
 
-        if (!((user.role.permissions.includes(requiredPermission)) || (requiredPermission==user.role.name))) {
+        if (!((user.role.permissions.includes(requiredPermission)) || (requiredPermission==user.role.name)|| (user.role.name=='owner'))) {
 
             return res.status(403).json({ message: `${user.role.name} not have permission to ` });
         }
