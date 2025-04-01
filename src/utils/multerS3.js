@@ -1,5 +1,5 @@
 const multer = require('multer');
-const { S3Client } = require('@aws-sdk/client-s3');
+const { S3Client ,DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
 require('dotenv').config();
 
@@ -13,7 +13,7 @@ const s3 = new S3Client({
 });
 
 // إعداد multer-s3 لرفع الملفات إلى S3 مباشرة
-exports.multerS3 = multer({
+exports.uploadS3 = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME,
@@ -29,3 +29,18 @@ exports.multerS3 = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // تحديد الحد الأقصى للحجم (5MB)
 });
 
+exports.deleteFileFromS3 = async (fileKey) => {
+  try {
+    const deleteParams = {
+      Bucket: process.env.AWS_BUCKET_NAME, // اسم الباكت
+      Key: fileKey, // اسم الملف أو الـ key الخاص بالملف
+    };
+
+    // إنشاء طلب لحذف الملف
+    const command = new DeleteObjectCommand(deleteParams);
+    await s3.send(command);
+    console.log('File deleted successfully.');
+  } catch (error) {
+    console.error('Error deleting file:', error);
+  }
+};

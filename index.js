@@ -2,8 +2,6 @@ const express = require('express');
 const cors = require("cors");
 const router = require('./src/routes/appRouter');
 const {connectDB} = require('./src/configs/mongoDB');
-const awsS3 = require('./src/configs/aws');
-
 const app = express();
 
 app.use(express.json());

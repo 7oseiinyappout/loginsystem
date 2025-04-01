@@ -1,4 +1,5 @@
 const userModel = require('../model/user');
+const { deleteFileFromS3 } = require('../utils/multerS3');
 const {  removeFieldsProject, removeFieldsFind } = require('../utils/reusableFunctions');
 const multer = require('multer');
 
@@ -68,11 +69,23 @@ exports.getall = async (req, res) => {
 exports.editImage = async (req, res) => {
     try {
         const imagePath = req.file.path||req.file.location ; // المسار المحلي للصورة
-        
-        // تحديث بيانات المستخدم وإضافة رابط الصورة
-        const user = await userModel.updateOne({_id:req.user._id}, { profileImage: imagePath });
+        let user  = await userModel.findOneAndUpdate({_id:req.user._id}, { profileImage: imagePath });
+        let path =user.profileImage.split('amazonaws.com/')[1]
+        deleteFileFromS3(path)
     
         res.json({ success: true, message: imagePath });
+      } catch (error) {
+        res.status(500).json({ success: false, message: 'حدث خطأ أثناء رفع الصورة', error });
+      }
+};
+
+
+exports.removeImage = async (req, res) => {
+    try {
+        let user = await userModel.findOne({_id: req.user._id});
+        let path =user.profileImage.split('amazonaws.com/')[1]
+        deleteFileFromS3(path)
+        res.json({ success: true, message: "deleted" });
       } catch (error) {
         res.status(500).json({ success: false, message: 'حدث خطأ أثناء رفع الصورة', error });
       }
