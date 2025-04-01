@@ -13,7 +13,7 @@ const s3 = new S3Client({
 });
 
 // إعداد multer-s3 لرفع الملفات إلى S3 مباشرة
-exports.uploadS3 = multer({
+exports.upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME,
