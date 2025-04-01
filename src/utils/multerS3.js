@@ -31,9 +31,10 @@ exports.uploadS3 = multer({
 
 exports.deleteFileFromS3 = async (fileKey) => {
   try {
+    let path =fileKey.split('amazonaws.com/')[1]
     const deleteParams = {
       Bucket: process.env.AWS_BUCKET_NAME, // اسم الباكت
-      Key: fileKey, // اسم الملف أو الـ key الخاص بالملف
+      Key: path, // اسم الملف أو الـ key الخاص بالملف
     };
 
     // إنشاء طلب لحذف الملف

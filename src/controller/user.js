@@ -70,8 +70,7 @@ exports.editImage = async (req, res) => {
     try {
         const imagePath = req.file.path||req.file.location ; // المسار المحلي للصورة
         let user  = await userModel.findOneAndUpdate({_id:req.user._id}, { profileImage: imagePath });
-        let path =user.profileImage.split('amazonaws.com/')[1]
-        deleteFileFromS3(path)
+        deleteFileFromS3(user.profileImage)
     
         res.json({ success: true, message: imagePath });
       } catch (error) {
@@ -83,8 +82,7 @@ exports.editImage = async (req, res) => {
 exports.removeImage = async (req, res) => {
     try {
         let user = await userModel.findOne({_id: req.user._id});
-        let path =user.profileImage.split('amazonaws.com/')[1]
-        deleteFileFromS3(path)
+        deleteFileFromS3(user.profileImage)
         res.json({ success: true, message: "deleted" });
       } catch (error) {
         res.status(500).json({ success: false, message: 'حدث خطأ أثناء رفع الصورة', error });
