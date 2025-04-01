@@ -2,7 +2,7 @@ const express=require('express');
 const router = express.Router();
 const userController= require('../controller/user');
 const mw= require('../middlewares/authMiddleware');
-const {multer}= require('../utils/reusableFunctions');
+const multer= require('../utils/multer');
 const s3= require('../utils/multerS3');
 
 
@@ -25,7 +25,7 @@ router.get('/getpass',
 );
 
 router.put('/edit-image',
-    mw.authMiddleware,multer.single('profileImage'), 
+    mw.authMiddleware,multer.upload.single('profileImage'), 
     userController.editImage
 );
 

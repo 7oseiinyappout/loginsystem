@@ -1,7 +1,6 @@
 const userModel = require('../model/user');
 const { deleteFileFromS3 } = require('../utils/multerS3');
 const {  removeFieldsProject, removeFieldsFind } = require('../utils/reusableFunctions');
-const multer = require('multer');
 
 exports.options =async (req, res, err) => {
     res.send({
