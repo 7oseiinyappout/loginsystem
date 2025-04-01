@@ -8,7 +8,11 @@ const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
+<<<<<<< Updated upstream
     secretAccessKey: process.env.AWS_SERET_KEY,
+=======
+    secretAccessKey: process.env.AWS_SECRET_KEY,
+>>>>>>> Stashed changes
   },
 });
 

@@ -67,12 +67,12 @@ exports.getall = async (req, res) => {
 
 exports.editImage = async (req, res) => {
     try {
-        const imagePath = req.file.path; // المسار المحلي للصورة
+        const imagePath = req.file.path||req.file.location ; // المسار المحلي للصورة
         
         // تحديث بيانات المستخدم وإضافة رابط الصورة
         const user = await userModel.updateOne({_id:req.user._id}, { profileImage: imagePath });
     
-        res.json({ success: true, message: 'تم رفع الصورة بنجاح' });
+        res.json({ success: true, message: imagePath });
       } catch (error) {
         res.status(500).json({ success: false, message: 'حدث خطأ أثناء رفع الصورة', error });
       }
