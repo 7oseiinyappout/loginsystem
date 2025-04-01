@@ -1,13 +1,17 @@
 const express = require('express');
 const cors = require("cors");
 const router = require('./src/routes/appRouter');
-const databases = require('./src/database/config');
+const {connectDB} = require('./src/configs/mongoDB');
+const awsS3 = require('./src/configs/aws');
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
-databases()
+app.use('/uploads', express.static('uploads'));
+
+connectDB()
+// awsS3()
 app.all("/",(req,res,err) => {res.send("wellcode to out app")});
 app.use("/api",router)
 app.all("*",(req,res,err) => {res.send("route not found")});

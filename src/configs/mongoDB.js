@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const url='mongodb+srv://admin:itiAmazon@cluster0.ke6bvtv.mongodb.net/new25'
 
-const connectDB = async () => {
+exports.connectDB = async () => {
     try {
         await mongoose.connect(url, {
             useNewUrlParser: true,
@@ -14,4 +14,4 @@ const connectDB = async () => {
     }
 };
 
-module.exports = connectDB;
+// module.exports = connectDB;
