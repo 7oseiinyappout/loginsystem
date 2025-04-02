@@ -25,12 +25,14 @@ router.get('/getpass',
 );
 
 router.put('/edit-image',
-    mw.authMiddleware,multer.upload.single('profileImage'), 
+    mw.authMiddleware,
+    multer.upload.single('profileImage'), 
     userController.editImage
 );
 
 router.put('/edit-image-s3',
-    mw.authMiddleware,s3.upload.single('profileImage'), 
+    mw.authMiddleware,
+    s3.upload.single('profileImage'), 
     userController.editImage
 );
 
