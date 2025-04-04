@@ -4,6 +4,7 @@ const userModel = require('../model/user');
 const Role = require('../model/role');
 const nodemailer = require("nodemailer");
 const notification = require("../utils/notification");
+const AppError = require('../utils/appError');
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -35,7 +36,7 @@ exports.register = async (req, res, err) => {
         })
     }
 }
-exports.login = async (req, res, err) => {
+exports.login = async (req, res, next) => {
     const { ref, password } = req.body
 
     try {
@@ -56,7 +57,9 @@ exports.login = async (req, res, err) => {
             userId: "user12333",
             message: "99999999999999999"          
         })
-    } catch (err) { return }
+    } catch (err) { 
+        next(new AppError(err, 502));
+     }
 
 }
 exports.sendVerificationEmail  = async (email, token) => {
