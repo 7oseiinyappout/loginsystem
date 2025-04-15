@@ -7,6 +7,8 @@ export default function ClipboardPage() {
     const [showForm, setShowForm] = useState(false)
     const [content, setContent] = useState('')
     const [clipboards, setClipboards] = useState([])
+    const [type, setType] = useState('text')
+    const [file, setFile] = useState(null)
 
     useEffect(() => {
         fetchClipboards()
@@ -18,7 +20,6 @@ export default function ClipboardPage() {
             headers: { Authorization: `Bearer ${token}` }
         })
 
-        // التأكد من أن البيانات هي مصفوفة
         const data = await res.json()
         if (Array.isArray(data.data)) {
             setClipboards(data.data)
@@ -29,19 +30,36 @@ export default function ClipboardPage() {
 
     const handleAddClipboard = async () => {
         const token = localStorage.getItem('token')
-        const res = await fetch('http://192.168.1.12:3000/api/clipboard', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                content,
-                type: 'text'
-            }),
-        })
 
-        const data = await res.json()
+        let res, data
+
+        if (type === 'text') {
+            res = await fetch('http://192.168.1.12:3000/api/clipboard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    content,
+                    type: 'text'
+                }),
+            })
+        } else {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('type', 'file')
+
+            res = await fetch('http://192.168.1.12:3000/api/clipboard', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData,
+            })
+        }
+
+        data = await res.json()
 
         if (res.ok) {
             Swal.fire({
@@ -51,8 +69,10 @@ export default function ClipboardPage() {
                 confirmButtonColor: '#0070f3',
             })
             setContent('')
+            setFile(null)
+            setType('text')
             setShowForm(false)
-            fetchClipboards() // 🔄 تحديث القائمة بعد الإضافة
+            fetchClipboards()
         } else {
             Swal.fire({
                 icon: 'error',
@@ -125,19 +145,32 @@ export default function ClipboardPage() {
         }
     }
 
-
     return (
         <div style={styles.container}>
             <h2 style={styles.title}>My Clipboard</h2>
 
             {showForm ? (
                 <div style={styles.form}>
-                    <textarea
-                        style={styles.textarea}
-                        placeholder="Write your clipboard content here..."
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                    />
+                    <select value={type} onChange={(e) => setType(e.target.value)} style={styles.select}>
+                        <option value="text">Text</option>
+                        <option value="file">File</option>
+                    </select>
+
+                    {type === 'text' ? (
+                        <textarea
+                            style={styles.textarea}
+                            placeholder="Write your clipboard content here..."
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                        />
+                    ) : (
+                        <input
+                            type="file"
+                            onChange={(e) => setFile(e.target.files[0])}
+                            style={styles.inputFile}
+                        />
+                    )}
+
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <button style={styles.saveButton} onClick={handleAddClipboard}>
                             Save
@@ -158,20 +191,64 @@ export default function ClipboardPage() {
                 {clipboards.length === 0 ? (
                     <p style={{ marginTop: '20px' }}>No clipboards found.</p>
                 ) : (
-                    clipboards.map((clip, i) => (
-                        <div key={i} style={styles.card}>
-                            <p>{clip.content}</p>
-                            <small style={{ color: '#555' }}>{new Date(clip.createdAt).toLocaleString()}</small>
-                            <div style={styles.buttons}>
-                                <button style={styles.copyButton} onClick={() => handleCopy(clip.content)}>
-                                    Copy
-                                </button>
-                                <button style={styles.deleteButton} onClick={() => handleDelete(clip._id)}>
-                                    Delete
-                                </button>
+                    clipboards.map((clip, i) => {
+                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(clip.content || '')
+                        const fileUrl = clip.content
+                    
+                        return (
+                            <div key={i} style={styles.card}>
+                                {clip.type === 'file' ? (
+                                    isImage ? (
+                                        <img
+                                            src={fileUrl}
+                                            alt="Clipboard Image"
+                                            style={{ width: '100%', borderRadius: '6px' }}
+                                        />
+                                    ) : (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span>📄</span>
+                                            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                                                Download File
+                                            </a>
+                                        </div>
+                                    )
+                                ) : (
+                                    <p>{clip.content}</p>
+                                )}
+                                <small style={{ color: '#555' }}>{new Date(clip.createdAt).toLocaleString()}</small>
+                                <div style={styles.buttons}>
+                                    {clip.type === 'text' ? (
+                                        <button
+                                            style={styles.copyButton}
+                                            onClick={() => handleCopy(clip.content)}
+                                        >
+                                            Copy
+                                        </button>
+                                    ) : (
+                                        <a
+                                            href={fileUrl}
+                                            download
+                                            style={{
+                                                ...styles.copyButton,
+                                                textDecoration: 'none',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            Download
+                                        </a>
+                                    )}
+                                    <button
+                                        style={styles.deleteButton}
+                                        onClick={() => handleDelete(clip._id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        )
+                    })
+                    
+                    
                 )}
             </div>
         </div>
@@ -213,6 +290,16 @@ const styles = {
         fontSize: '16px',
         border: '1px solid #ccc',
         borderRadius: '6px',
+    },
+    inputFile: {
+        padding: '10px',
+        fontSize: '16px',
+    },
+    select: {
+        padding: '8px',
+        fontSize: '16px',
+        borderRadius: '6px',
+        border: '1px solid #ccc',
     },
     saveButton: {
         flex: 1,
