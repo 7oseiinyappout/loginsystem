@@ -15,11 +15,11 @@ const transporter = nodemailer.createTransport({
 });
 exports.register = async (req, res, err) => {
 
-    try {
+    
         const user = req.body;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(user.password, salt);
-        const role = await Role.findOne({ name: req.body.roleName });
+        const role = await Role.findOne({ name: req.body.role });
         if (!role) return res.status(400).json({ message: "Invalid role" });
         const User = await userModel.create({ ...user, password: hashedPassword, role: role._id});
 
@@ -27,14 +27,10 @@ exports.register = async (req, res, err) => {
         await this.sendVerificationEmail(user.email, token);
 
         res.send({
-            message: "User registered successfully",
+            message: "User registered successfully and verification email sent",
             data: User
         })
-    } catch (err) {
-        res.send({
-            message: err.message,
-        })
-    }
+    
 }
 exports.login = async (req, res, next) => {
     const { ref, password } = req.body
@@ -53,10 +49,10 @@ exports.login = async (req, res, next) => {
         const token = jwt.sign({ _id: user._id, role: user.role }, 'SECRET_KEY', { expiresIn: "2h" });
         delete user.password
         res.send({ token, user })
-        notification.send({
-            userId: "user12333",
-            message: "99999999999999999"          
-        })
+        // notification.send({
+        //     userId: "user12333",
+        //     message: "99999999999999999"          
+        // })
     } catch (err) { 
         next(new AppError(err, 502));
      }

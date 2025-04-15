@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const url='mongodb+srv://admin:itiAmazon@cluster0.ke6bvtv.mongodb.net/new25'
+const url='mongodb+srv://admin:itiAmazon@cluster0.ke6bvtv.mongodb.net/clipboard'
 
 exports.connectDB = async () => {
     try {

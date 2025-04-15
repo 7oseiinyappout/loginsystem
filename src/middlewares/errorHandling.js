@@ -2,8 +2,14 @@ require('dotenv').config();
 
 module.exports = (err, req, res, next) => {
     console.error(err.stack); // أو استخدم winston/logging tool
-    const statusCode = err.statusCode || 500;
-    const message = err.message || 'Something went wrong';
+    let statusCode = err.statusCode || 500;
+    let message = err.message || 'Something went wrong';
+
+    if (err.code === 11000) {
+        statusCode = 400;
+        const field = Object.keys(err.keyValue)[0];
+        message = `The ${field} '${err.keyValue[field]}' is already in use.`;
+    }
 
     res.status(statusCode).json({
         success: false,

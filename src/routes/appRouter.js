@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userRouter = require('./user');
 const roleRouter = require('./role');
+const clipboardRouter = require('./clipboard');
 const authenticationRouter = require('./authentication');
 // Define API routes
 router.get('/', (req, res) => {
@@ -12,6 +13,7 @@ router.get('/', (req, res) => {
 router.use('/auth',authenticationRouter )
 router.use('/user',userRouter )
 router.use('/role',roleRouter )
+router.use('/clipboard',clipboardRouter )
 router.get('*', (req, res) => {
     res.send('api not found');
 });
