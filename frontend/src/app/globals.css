@@ -23,4 +23,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-y: 'auto'; /* تأكد من أن التمرير يعمل */
+  max-height: '500px';
+  height: '500px !important';
 }

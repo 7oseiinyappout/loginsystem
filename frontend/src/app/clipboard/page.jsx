@@ -9,24 +9,41 @@ export default function ClipboardPage() {
     const [clipboards, setClipboards] = useState([])
     const [type, setType] = useState('text')
     const [file, setFile] = useState(null)
-
+    const [page, setPage] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [hasMore, setHasMore] = useState(true)
+    const limit = 5 // نفس اللي في API
+    
     useEffect(() => {
         fetchClipboards()
     }, [])
-
+    
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [loading, hasMore])
+    
+    
     const fetchClipboards = async () => {
+        if (loading || !hasMore) return;
+        setLoading(true);
+    
         const token = localStorage.getItem('token')
-        const res = await fetch('http://192.168.1.12:3000/api/clipboard', {
+        const res = await fetch(`http://192.168.1.12:3000/api/clipboard?skip=${page * limit}&limit=${limit}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
-
+    
         const data = await res.json()
+    
         if (Array.isArray(data.data)) {
-            setClipboards(data.data)
-        } else {
-            console.error('Data is not an array:', data)
+            setClipboards(prev => [...prev, ...data.data])
+            setHasMore((page + 1) * limit < data.total)
+            setPage(prev => prev + 1)
         }
+    
+        setLoading(false)
     }
+    
 
     const handleAddClipboard = async () => {
         const token = localStorage.getItem('token')
@@ -72,7 +89,8 @@ export default function ClipboardPage() {
             setFile(null)
             setType('text')
             setShowForm(false)
-            fetchClipboards()
+            setClipboards(prev => [data.data, ...prev])
+            setPage(0)
         } else {
             Swal.fire({
                 icon: 'error',
@@ -134,7 +152,7 @@ export default function ClipboardPage() {
                 text: 'The clipboard has been deleted successfully.',
                 confirmButtonColor: '#d33',
             })
-            fetchClipboards()
+            setClipboards(prev => prev.filter(clip => clip._id !== id))
         } else {
             Swal.fire({
                 icon: 'error',
@@ -144,9 +162,21 @@ export default function ClipboardPage() {
             })
         }
     }
-
+    const handleScroll = () => {
+        if (
+            window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 &&
+            !loading &&
+            hasMore
+        ) {
+            fetchClipboards()
+        }
+    }
+    
+    
+    
+    
     return (
-        <div style={styles.container}>
+        <div  onScroll={handleScroll} style={styles.container}>
             <h2 style={styles.title}>My Clipboard</h2>
 
             {showForm ? (
@@ -187,7 +217,9 @@ export default function ClipboardPage() {
             )}
 
             {/* ✅ عرض الكليبات */}
-            <div style={styles.clipList}>
+            <div style={styles.clipList}
+            
+             >
                 {clipboards.length === 0 ? (
                     <p style={{ marginTop: '20px' }}>No clipboards found.</p>
                 ) : (
@@ -213,7 +245,7 @@ export default function ClipboardPage() {
                                         </div>
                                     )
                                 ) : (
-                                    <p>{clip.content}</p>
+                                    <p style={{color:"black"}}>{clip.content}</p>
                                 )}
                                 <small style={{ color: '#555' }}>{new Date(clip.createdAt).toLocaleString()}</small>
                                 <div style={styles.buttons}>
@@ -261,6 +293,8 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        overflowY: 'auto', /* تأكد من أن التمرير يعمل */
+        // maxHeight: '100vh',
     },
     title: {
         fontSize: '26px',

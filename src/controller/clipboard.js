@@ -13,13 +13,27 @@ exports.createClipboard = async (req, res) => {
 };
 exports.getAllClipboard = async (req, res) => {
     try {
-        let userId = req.user._id;
-        let clipboards = await Clipboard.find({user:userId});
-        res.send({ message: "all clipboards", data: clipboards });
+        const userId = req.user._id;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = parseInt(req.query.skip) || 0;
+
+        const clipboards = await Clipboard.find({ user: userId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Clipboard.countDocuments({ user: userId });
+
+        res.send({
+            message: "All clipboards",
+            data: clipboards,
+            total
+        });
     } catch (err) {
         res.status(500).send({ error: err.message });
     }
 };
+
 
 exports.deleteClipboard = async (req, res) => {
     try {
