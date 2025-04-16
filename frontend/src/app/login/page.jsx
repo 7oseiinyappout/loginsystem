@@ -28,6 +28,7 @@ export default function LoginPage() {
     if (res.ok) {
       // احفظ التوكن في localStorage
       localStorage.setItem('token', data.token)
+      localStorage.setItem('userId', data.user._id)
 
       Swal.fire({
         icon: 'success',

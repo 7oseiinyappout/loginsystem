@@ -18,28 +18,44 @@ app.use(express.json());
 const connectedUsers = new Map();
 
 // لما اليوزر يتصل
+
 io.on('connection', (socket) => {
   const userId = socket.handshake.query.userId;
-  if (userId) {
-    connectedUsers.set(userId, socket);
-    console.log(`✅ User ${userId} connected`);
-  }
 
-  socket.on('disconnect', () => {
-    connectedUsers.delete(userId);
-    console.log(`❌ User ${userId} disconnected`);
-  });
+  if (userId) {
+    if (!connectedUsers.has(userId)) {
+      connectedUsers.set(userId, []);
+    }
+    connectedUsers.get(userId).push(socket);
+    console.log(`✅ User ${userId} connected. Total sockets: ${connectedUsers.get(userId).length}`);
+
+    socket.on('disconnect', () => {
+      const sockets = connectedUsers.get(userId) || [];
+      const updatedSockets = sockets.filter(s => s !== socket);
+      if (updatedSockets.length === 0) {
+        connectedUsers.delete(userId);
+        console.log(`❌ User ${userId} disconnected (all sockets closed)`);
+      } else {
+        connectedUsers.set(userId, updatedSockets);
+        console.log(`⚠️ Socket disconnected. Remaining sockets for ${userId}: ${updatedSockets.length}`);
+      }
+    });
+  }
 });
 
 // Endpoint نستخدمه من Postman عشان نبعِت إشعار
 app.post('/send', (req, res) => {
   const { userId, message } = req.body;
-  const socket = connectedUsers.get(userId);
-  if (socket) {
-    socket.emit('notification', message);
+  const sockets = connectedUsers.get(userId);
+
+  if (sockets && sockets.length > 0) {
+    sockets.forEach(s => {
+      s.emit('notification', message);
+    });
+
     return res.json({ success: true, message: '📬 Notification sent' });
   } else {
-    return res.status(404).json({ success: false, message: 'User not connected' });
+    return res.status(404).json({ success: false, message: '❌ No connected sockets for this user' });
   }
 });
 
