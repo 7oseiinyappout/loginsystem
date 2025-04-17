@@ -69,7 +69,7 @@ export default function ClipboardPage() {
         setLoading(true);
 
         const token = localStorage.getItem('token')
-        const res = await fetch(`http://192.168.1.12:3000/api/clipboard?skip=${page * limit}&limit=${limit}`, {
+        const res = await fetch(`/api/clipboard?skip=${page * limit}&limit=${limit}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -91,7 +91,7 @@ export default function ClipboardPage() {
         let res, data
 
         if (type === 'text') {
-            res = await fetch('http://192.168.1.12:3000/api/clipboard', {
+            res = await fetch('/api/clipboard', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export default function ClipboardPage() {
             formData.append('file', file)
             formData.append('type', 'file')
 
-            res = await fetch('http://192.168.1.12:3000/api/clipboard', {
+            res = await fetch('/api/clipboard', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -174,7 +174,7 @@ export default function ClipboardPage() {
 
     const handleDelete = async (id) => {
         const token = localStorage.getItem('token')
-        const res = await fetch('http://192.168.1.12:3000/api/clipboard', {
+        const res = await fetch('/api/clipboard', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -265,63 +265,63 @@ export default function ClipboardPage() {
                 ) : (
                     clipboards.map((clip, i) => {
                         if (!clip) return null // ← تجاهل الكليب الفارغ
-                      
+
                         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(clip.content || '')
                         const fileUrl = clip.content
-                      
+
                         return (
-                          <div key={i} style={styles.card}>
-                            {clip.type === 'file' ? (
-                              isImage ? (
-                                <img
-                                  src={fileUrl}
-                                  alt="Clipboard Image"
-                                  style={{ width: '100%', borderRadius: '6px' }}
-                                />
-                              ) : (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <span>📄</span>
-                                  <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-                                    Download File
-                                  </a>
+                            <div key={i} style={styles.card}>
+                                {clip.type === 'file' ? (
+                                    isImage ? (
+                                        <img
+                                            src={fileUrl}
+                                            alt="Clipboard Image"
+                                            style={{ width: '100%', borderRadius: '6px' }}
+                                        />
+                                    ) : (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span>📄</span>
+                                            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                                                Download File
+                                            </a>
+                                        </div>
+                                    )
+                                ) : (
+                                    <p style={{ color: "black" }}>{clip.content}</p>
+                                )}
+                                <small style={{ color: '#555' }}>{new Date(clip.createdAt).toLocaleString()}</small>
+                                <div style={styles.buttons}>
+                                    {clip.type === 'text' ? (
+                                        <button
+                                            style={styles.copyButton}
+                                            onClick={() => handleCopy(clip.content)}
+                                        >
+                                            Copy
+                                        </button>
+                                    ) : (
+                                        <a
+                                            href={fileUrl}
+                                            download
+                                            style={{
+                                                ...styles.copyButton,
+                                                textDecoration: 'none',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            Download
+                                        </a>
+                                    )}
+                                    <button
+                                        style={styles.deleteButton}
+                                        onClick={() => handleDelete(clip._id)}
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
-                              )
-                            ) : (
-                              <p style={{ color: "black" }}>{clip.content}</p>
-                            )}
-                            <small style={{ color: '#555' }}>{new Date(clip.createdAt).toLocaleString()}</small>
-                            <div style={styles.buttons}>
-                              {clip.type === 'text' ? (
-                                <button
-                                  style={styles.copyButton}
-                                  onClick={() => handleCopy(clip.content)}
-                                >
-                                  Copy
-                                </button>
-                              ) : (
-                                <a
-                                  href={fileUrl}
-                                  download
-                                  style={{
-                                    ...styles.copyButton,
-                                    textDecoration: 'none',
-                                    textAlign: 'center',
-                                  }}
-                                >
-                                  Download
-                                </a>
-                              )}
-                              <button
-                                style={styles.deleteButton}
-                                onClick={() => handleDelete(clip._id)}
-                              >
-                                Delete
-                              </button>
                             </div>
-                          </div>
                         )
-                      })
-                      
+                    })
+
 
 
                 )}

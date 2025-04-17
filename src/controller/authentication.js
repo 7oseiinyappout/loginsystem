@@ -24,7 +24,7 @@ exports.register = async (req, res, err) => {
         const User = await userModel.create({ ...user, password: hashedPassword, role: role._id});
 
         const token = jwt.sign({ _id: user._id, role: user.role , email: user.email }, 'SECRET_KEY', { expiresIn: "1h" });
-        await this.sendVerificationEmail(user.email, token);
+        await this.sendVerificationEmail(user.email, token,req);
 
         res.send({
             message: "User registered successfully and verification email sent",
@@ -58,8 +58,10 @@ exports.login = async (req, res, next) => {
      }
 
 }
-exports.sendVerificationEmail  = async (email, token) => {
-    const verificationUrl = `http://localhost:3000/api/auth/verify-email?token=${token}`;
+exports.sendVerificationEmail  = async (email, token,req) => {
+    const protocol = req.protocol; // http or https
+    const host = req.get('host'); 
+    const verificationUrl = `${protocol}://${host}/api/auth/verify-email?token=${token}`;
 
     const mailOptions = {
         from: 'ahmedappout@gmail.com',

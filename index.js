@@ -8,12 +8,13 @@ process.on('uncaughtException', (err) => {
     process.exit(1);
 });
 require('express-async-errors');
+const path = require('path');
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 const express = require('express');
 const cors = require("cors");
 const router = require('./src/routes/appRouter');
-const {connectDB} = require('./src/configs/mongoDB');
+const { connectDB } = require('./src/configs/mongoDB');
 const errorHandler = require('./src/middlewares/errorHandling');
 const app = express();
 
@@ -24,9 +25,20 @@ app.use('/uploads', express.static('uploads'));
 
 connectDB()
 // awsS3()
-app.all("/",(req,res,err) => {res.send("wellcode to out app")});
-app.use("/api",router)
-app.all("*",(req,res,err) => {res.send("route not found")});
+const staticPath = path.join(__dirname, 'frontend/out'); // Adjusted the path to 'out'
+app.use(express.static(staticPath));
+
+
+app.use("/api", router)
+app.get('*', (req, res) => {
+    const filePath = path.join(staticPath, `${req.path}.html`);
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            res.sendFile(path.join(staticPath, 'index.html'));
+        }
+    });
+});
+
 app.use(errorHandler); // بعد جميع الـ routes
 
-app.listen(3000,() => {console.log("listening")});
+app.listen(3000, () => { console.log("listening") });
