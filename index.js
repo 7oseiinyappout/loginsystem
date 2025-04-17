@@ -25,7 +25,7 @@ app.use('/uploads', express.static('uploads'));
 
 connectDB()
 // awsS3()
-const staticPath = path.join(__dirname, 'frontend/out'); // Adjusted the path to 'out'
+const staticPath = path.join(__dirname, 'out'); // Adjusted the path to 'out'
 app.use(express.static(staticPath));
 
 
