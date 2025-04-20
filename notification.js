@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
 });
 
 // Endpoint نستخدمه من Postman عشان نبعِت إشعار
-app.post('/send', (req, res) => {
+app.post('/sendnotification', (req, res) => {
   const { userId, message } = req.body;
   const sockets = connectedUsers.get(userId);
 

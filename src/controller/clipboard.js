@@ -11,7 +11,7 @@ exports.createClipboard = async (req, res) => {
          notification.send({
             userId: req.user._id,
             message: "99999999999999999"          
-        })
+        },req)
     } catch (err) {
         res.status(500).send({ error: err.message });
     }

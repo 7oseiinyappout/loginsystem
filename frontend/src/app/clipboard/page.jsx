@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Swal from 'sweetalert2'
 import ClipboardJS from 'clipboard'
 import io from 'socket.io-client'
-// const socket = io('http://192.168.1.12:4000',
+// const socket = io(`${window.location.origin}`,
 //     {
 //         query: {
 //           userId: localStorage.getItem('userId')
@@ -33,7 +33,7 @@ export default function ClipboardPage() {
         const userId = decoded._id
 
         // ✅ هنا بننشئ الـ socket على العميل فقط
-        socketRef.current = io('http://192.168.1.12:4000', {
+        socketRef.current = io(`${window.location.origin}`, {
             query: { userId },
         })
 
