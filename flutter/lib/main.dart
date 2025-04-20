@@ -9,8 +9,18 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 void main() {
+  // Override RawKeyboard behavior to prevent crashes
+  RawKeyboard.instance.addListener((RawKeyEvent event) {
+    if (event is RawKeyDownEvent && RawKeyboard.instance.keysPressed.isEmpty) {
+      // Ignore invalid key down events
+      return;
+    }
+  });
+
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
   startClipboardMonitoring();
@@ -221,21 +231,66 @@ class WebSocketDemo extends StatefulWidget {
 }
 
 class _WebSocketDemoState extends State<WebSocketDemo> {
-  late WebSocketChannel channel;
+  late IO.Socket socket;
 
   @override
   void initState() {
     super.initState();
-    // Initialize WebSocket connection
-    channel = WebSocketChannel.connect(
-      Uri.parse('ws://your-websocket-url'), // Replace with your WebSocket URL
+    _initializeSocket();
+  }
+
+  Future<void> _initializeSocket() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      print('No token found');
+      return;
+    }
+
+    final decoded = jsonDecode(
+      utf8.decode(base64.decode(base64.normalize(token.split('.')[1]))),
     );
+    final userId = decoded['_id'];
+
+    // Initialize Socket.IO connection
+    socket = IO.io(
+        'https://loginsystem-production-9118.up.railway.app', <String, dynamic>{
+      'transports': ['websocket'],
+      'query': {'userId': userId},
+    });
+
+    socket.on('connect', (_) {
+      print('Connected to WebSocket');
+      socket.emit('join', userId);
+    });
+
+    socket.on('notification', (clip) {
+      print('📢 New clipboard received: $clip');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Clipboard Saved!'),
+            content: Text('📢 New clipboard received: $clip'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    });
+
+    socket.on('disconnect', (_) => print('Disconnected from WebSocket'));
   }
 
   @override
   void dispose() {
-    // Close the WebSocket connection when the widget is disposed
-    channel.sink.close();
+    socket.disconnect();
     super.dispose();
   }
 
@@ -245,15 +300,8 @@ class _WebSocketDemoState extends State<WebSocketDemo> {
       appBar: AppBar(
         title: const Text('WebSocket Demo'),
       ),
-      body: StreamBuilder(
-        stream: channel.stream,
-        builder: (context, snapshot) {
-          return Center(
-            child: Text(
-              snapshot.hasData ? '${snapshot.data}' : 'No data received',
-            ),
-          );
-        },
+      body: Center(
+        child: Text('Listening for clipboard notifications...'),
       ),
     );
   }
