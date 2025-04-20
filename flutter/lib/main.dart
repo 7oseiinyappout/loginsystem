@@ -8,6 +8,7 @@ import 'clipboard.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +86,7 @@ class MyApp extends StatelessWidget {
         '/url_launcher': (context) => const UrlLauncherPage(),
         '/clipboard_monitor': (context) => const ClipboardMonitor(),
         '/clipboard_watcher_test': (context) => const ClipboardWatcherTest(),
+        '/websocket_demo': (context) => const WebSocketDemo(),
       },
     );
   }
@@ -124,6 +126,10 @@ class HomePage extends StatelessWidget {
               onPressed: () =>
                   Navigator.pushNamed(context, '/clipboard_watcher_test'),
               child: const Text('Clipboard Watcher Test'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/websocket_demo'),
+              child: const Text('WebSocket Demo'),
             ),
           ],
         ),
@@ -202,6 +208,52 @@ class ClipboardWatcherTest extends StatelessWidget {
           },
           child: const Text('Start Clipboard Watcher'),
         ),
+      ),
+    );
+  }
+}
+
+class WebSocketDemo extends StatefulWidget {
+  const WebSocketDemo({super.key});
+
+  @override
+  _WebSocketDemoState createState() => _WebSocketDemoState();
+}
+
+class _WebSocketDemoState extends State<WebSocketDemo> {
+  late WebSocketChannel channel;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize WebSocket connection
+    channel = WebSocketChannel.connect(
+      Uri.parse('ws://your-websocket-url'), // Replace with your WebSocket URL
+    );
+  }
+
+  @override
+  void dispose() {
+    // Close the WebSocket connection when the widget is disposed
+    channel.sink.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('WebSocket Demo'),
+      ),
+      body: StreamBuilder(
+        stream: channel.stream,
+        builder: (context, snapshot) {
+          return Center(
+            child: Text(
+              snapshot.hasData ? '${snapshot.data}' : 'No data received',
+            ),
+          );
+        },
       ),
     );
   }
