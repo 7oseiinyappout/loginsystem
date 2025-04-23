@@ -12,10 +12,15 @@ require('express-async-errors');
 ////////////////////////////////////////////////////////////////////////////////////////////////
 const express = require('express');
 const cors = require("cors");
+const http = require('http');
 const router = require('./src/routes/appRouter');
 const {connectDB} = require('./src/configs/mongoDB');
 const errorHandler = require('./src/middlewares/errorHandling');
+
 const app = express();
+const server = http.createServer(app);
+
+require('./src/notifications').setupSocket(server);
 
 app.use(express.json());
 app.use(cors());
@@ -29,4 +34,4 @@ app.use("/api",router)
 app.all("*",(req,res,err) => {res.send("route not found")});
 app.use(errorHandler); // بعد جميع الـ routes
 
-app.listen(3000,() => {console.log("listening")});
+server.listen(3000,() => {console.log("listening")});
